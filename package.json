@@ -1,0 +1,20 @@
+{
+  "name": "console-chess",
+  "version": "0.0.1",
+  "description": "A console-based Javascript chess engine that uses MiniMax for the algorithm",
+  "keywords": [
+    "chess"
+  ],
+  "license": "MIT",
+  "author": "Tim Grindall",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "chess.js": "^1.4.0",
+    "prompt-sync": "^4.2.0"
+  }
+}
