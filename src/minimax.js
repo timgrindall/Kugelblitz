@@ -14,7 +14,7 @@ let nodes_evaluated = 0;
 let zero_evals = 0;
 let nonzero_evals = 0;
 
-let nonzeroEvalsByDepth = []
+let nonzeroEvalsByDepth;
 
 function orderMoves(moves, position) {
   return moves.sort((moveA, moveB) => {
@@ -30,11 +30,18 @@ function orderMoves(moves, position) {
 }
 
 function getCenterBias(move, isMaximizing) {
-  // move is like "e2e4" or "Nf3"
+  // Remove check (+), checkmate (#), and other notation symbols
+  const cleanMove = move.replace(/[+#!?]/g, '');
+  
+  // Don't apply center bias to king moves
+  if (cleanMove.startsWith('K')) {
+    return 0;
+  }
+
   let toSquare;
   
-  if (move.length >= 2) {
-    toSquare = move.slice(-2);
+  if (cleanMove.length >= 2) {
+    toSquare = cleanMove.slice(-2);  // Now gets "e3"
   } else {
     return 0;
   }
@@ -44,10 +51,38 @@ function getCenterBias(move, isMaximizing) {
   
   const distFromCenter = Math.abs(file - 3.5) + Math.abs(rank - 3.5);
   
-  // For maximizer: closer to center = higher bias
-  // For minimizer: closer to center = lower bias (negative)
-  const bias = 5 - distFromCenter;  // Much weaker
+  const bias = 5 - distFromCenter;
   return isMaximizing ? bias : -bias;
+}
+
+// src/minimax.js
+
+function getCenterBiasV2(move, maximizingPlayer) {
+  // Parse move: e.g., "e4" → col=4, row=3
+  const colMap = { 'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7 };
+  const rowMap = { '1': 0, '2': 1, '3': 2, '4': 3, '5': 4, '6': 5, '7': 6, '8': 7 };
+
+  const [file, rank] = move.split('');
+  const col = colMap[file];
+  const row = rowMap[rank];
+
+  // Center of 8x8 board (0-indexed)
+  const centerX = 4;
+  const centerY = 4;
+
+  // Euclidean distance from center
+  const dx = Math.abs(col - centerX);
+  const dy = Math.abs(row - centerY);
+  const distance = Math.sqrt(dx * dx + dy * dy);
+
+  // Maximum possible distance (from corner to center)
+  const maxDistance = Math.sqrt(3 * 3 + 3 * 3); // √(9+9) = √18 ≈ 4.24
+
+  // Normalize distance to a bias score (0 to 1)
+  // Closer to center → higher score (positive bias)
+  const biasScore = 1 - (distance / maxDistance);
+
+  return biasScore; // Positive value for moves near center
 }
 
 function getPieceValue(piece){
@@ -123,7 +158,7 @@ function minimax(position, depth, alpha, beta, maximizing_player, initialDepth =
 
       const timerEnd = Date.now()
 
-      const bias = getCenterBias(possibleMoves[i], maximizing_player);
+      const bias = getCenterBiasV2(possibleMoves[i], maximizing_player);
       const adjustedEval = childEval + bias;
 
       // DEBUG: Log move and its evaluation
@@ -174,7 +209,7 @@ function minimax(position, depth, alpha, beta, maximizing_player, initialDepth =
 
       const timerEnd = Date.now()
 
-      const bias = getCenterBias(possibleMoves[i], maximizing_player);
+      const bias = getCenterBiasV2(possibleMoves[i], maximizing_player);
       const adjustedEval = childEval + bias;
 
       // DEBUG: Log move and its evaluation
@@ -220,10 +255,11 @@ export function resetCounters(maxDepth) {
   nodes_evaluated = 0;
   zero_evals = 0;
   nonzero_evals = 0;
-  nonzeroEvalsByDepth = new Array(maxDepth)
+  nonzeroEvalsByDepth = new Array(maxDepth).fill(0);
 }
 
 export function getNonzeroEvalsByDepth() {
+  // console.log("nonzeroEvalsByDepth:", nonzeroEvalsByDepth);  // Debug
   return nonzeroEvalsByDepth;
 }
 

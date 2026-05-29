@@ -31,7 +31,6 @@ while (!chess.isGameOver()) {
       console.log("Invalid move, please try again.")
       continue;
     }
-    console.log(chess.ascii())
   } else {
     // Computer's turn
     console.log(chess.ascii())
@@ -47,7 +46,7 @@ while (!chess.isGameOver()) {
     console.log(`Nodes evaluated: ${getNodesEvaluated()}`)
     console.log(`Zero evaluations: ${getZeroEvals()}`)
     console.log(`Non-zero evaluations: ${getNonzeroEvals()}`)
-    console.log(`Non-zero evals by depth: out of ${maxDepth}`)
+    // console.log(`Non-zero evals by depth: out of ${maxDepth}`)
     const depthEvals = getNonzeroEvalsByDepth();
     for (let i = 0; i < depthEvals.length; i++) {
       if (depthEvals[i]) console.log(`Depth ${i}: ${depthEvals[i]} non-zero evals`);
