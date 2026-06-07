@@ -1,6 +1,7 @@
 import { Chess } from 'chess.js'
 import promptSync from 'prompt-sync'
-import minimax, { getNodesEvaluated, getZeroEvals, getNonzeroEvals, getNonzeroEvalsByDepth, resetCounters } from './minimax.js'
+import minimax from './minimax.js'
+import { getNodesEvaluated, getZeroEvals, getNonzeroEvals, getNonzeroEvalsByDepth, resetCounters } from './helpers.js'
 
 const prompt = promptSync({sigint: true})
 const chess = new Chess()
@@ -8,9 +9,15 @@ const chess = new Chess()
 const args = process.argv
 let maxDepth = 5;
 let playerColor = 'w'; // Default to white
+let DEBUG = false;
 
 if (args.length >= 3) maxDepth = Number(args[2]);
 if (args.length >= 4) playerColor = args[3].toLowerCase();
+if (args.length >= 5) {
+  const debugString = args[4].toLowerCase();
+  if (debugString === '-debug') DEBUG = true;
+  else DEBUG = false;
+}
 
 if (!['w', 'b'].includes(playerColor)) {
   console.log("Invalid color. Use 'w' for white or 'b' for black.");
@@ -39,19 +46,22 @@ while (!chess.isGameOver()) {
     resetCounters(maxDepth);
 
     const isMaximizing = chess.turn() === 'w';
-    const [bestMove, score] = minimax(chess, maxDepth, -Infinity, +Infinity, isMaximizing)
+    const [bestMove, score] = minimax(chess, maxDepth, -Infinity, +Infinity, isMaximizing, maxDepth, DEBUG)
     const endTime = Date.now();
+    process.stdout.write('\n')
 
-    console.log(`Computer plays: ${bestMove} (score: ${score})`)
+    // Wait for the user to see the move
     console.log(`Nodes evaluated: ${getNodesEvaluated()}`)
     console.log(`Zero evaluations: ${getZeroEvals()}`)
     console.log(`Non-zero evaluations: ${getNonzeroEvals()}`)
-    // console.log(`Non-zero evals by depth: out of ${maxDepth}`)
-    const depthEvals = getNonzeroEvalsByDepth();
-    for (let i = 0; i < depthEvals.length; i++) {
-      if (depthEvals[i]) console.log(`Depth ${i}: ${depthEvals[i]} non-zero evals`);
-    }
-    console.log(`Time elapsed: ${(endTime - startTime)/1000} seconds`)
+    console.log(`Computer plays: ${bestMove} (score: ${score})`)
+
+    // Print out non-zero evals by depth
+    // const depthEvals = getNonzeroEvalsByDepth();
+    // for (let i = 0; i < depthEvals.length; i++) {
+    //   if (depthEvals[i]) console.log(`Depth ${i}: ${depthEvals[i]} non-zero evals`);
+    // }
+    console.log(`\nTime elapsed: ${(endTime - startTime)/1000} seconds`)
     chess.move(bestMove)
   }
   
