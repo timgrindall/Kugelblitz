@@ -1,7 +1,7 @@
 import { Chess } from 'chess.js'
 import promptSync from 'prompt-sync'
 import minimax from './minimax.js'
-import { getNodesEvaluated, getZeroEvals, getNonzeroEvals, getNonzeroEvalsByDepth, resetCounters } from './helpers.js'
+import { getNodesEvaluated, getZeroEvals, getNonzeroEvals, getNonzeroEvalsByDepth, getAvgOpenLineBonus, resetCounters } from './helpers.js'
 
 const prompt = promptSync({sigint: true})
 const chess = new Chess()
@@ -51,6 +51,7 @@ while (!chess.isGameOver()) {
     process.stdout.write('\n')
 
     // Wait for the user to see the move
+    console.log(`Average Open Line Bonus: ${getAvgOpenLineBonus()}`)
     console.log(`Nodes evaluated: ${getNodesEvaluated()}`)
     console.log(`Zero evaluations: ${getZeroEvals()}`)
     console.log(`Non-zero evaluations: ${getNonzeroEvals()}`)
