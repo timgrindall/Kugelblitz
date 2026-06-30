@@ -3,11 +3,11 @@ import { orderMoves, getCenterBias, getPieceValue, evaluateBoard, evaluatePositi
 
 // const DEBUG = true; // Set to true to enable debug logging
 
-function minimax(position, depth, alpha, beta, maximizing_player, initialDepth = depth, DEBUG = false){
+function minimax(position, depth, alpha, beta, maximizing_player, move = "", initialDepth = depth, DEBUG = false){
 
   // base case: if terminal state (game over) or max depth (depth == 0) is reached, return evaluation of position
   if (position.isCheckmate() || position.isDraw() || depth == 0){
-    return [null, evaluatePosition(position, depth)];
+    return [null, evaluatePosition(position, depth, move)];
   }
 
   let bestMove;
@@ -32,30 +32,30 @@ function minimax(position, depth, alpha, beta, maximizing_player, initialDepth =
 
       const timerStart = Date.now()
       position.move(possibleMoves[i])
-      let [childBestMove, childEval] = minimax(position, depth - 1, alpha, beta, false, initialDepth, DEBUG)
+      let [childBestMove, childEval] = minimax(position, depth - 1, alpha, beta, false, possibleMoves[i], initialDepth, DEBUG)
 
       const timerEnd = Date.now()
 
-      const bias = getCenterBias(possibleMoves[i], maximizing_player);
-      const adjustedEval = childEval + bias;
+      // const bias = getCenterBias(possibleMoves[i], maximizing_player);
+      // const adjustedEval = childEval + bias;
 
       // DEBUG: Log move and its evaluation
       if (depth === initialDepth && DEBUG) {
         console.log(`Move ${possibleMoves[i]}: eval = ${childEval}, bias = ${bias}, adjusted = ${adjustedEval}   ${(timerEnd - timerStart)/1000} (sec)`);
       } else if (depth === initialDepth) {
-        progressBar(possibleMoves.length, i)
+        progressBar(possibleMoves.length, i);
       }
 
-      if (adjustedEval > maxEval) {
-        maxEval = adjustedEval;
+      if (childEval > maxEval) {
+        maxEval = childEval;
         bestMoves = [possibleMoves[i]];
-      } else if (adjustedEval === maxEval) {
+      } else if (childEval === maxEval) {
         bestMoves.push(possibleMoves[i]);
       }
       position.undo()
 
       // alpha beta pruning
-      alpha = Math.max(alpha, adjustedEval)
+      alpha = Math.max(alpha, childEval)
       if (beta <= alpha) {
         break;
       }
@@ -85,30 +85,30 @@ function minimax(position, depth, alpha, beta, maximizing_player, initialDepth =
 
       const timerStart = Date.now()
       position.move(possibleMoves[i])
-      let [childBestMove, childEval] = minimax(position, depth - 1, alpha, beta, true, initialDepth, DEBUG)
+      let [childBestMove, childEval] = minimax(position, depth - 1, alpha, beta, true, possibleMoves[i], initialDepth, DEBUG)
 
       const timerEnd = Date.now()
 
-      const bias = getCenterBias(possibleMoves[i], maximizing_player);
-      const adjustedEval = childEval + bias;
+      // const bias = getCenterBias(possibleMoves[i], maximizing_player);
+      // const adjustedEval = childEval + bias;
 
       // DEBUG: Log move and its evaluation
       if (depth === initialDepth && DEBUG) {
         console.log(`Move ${possibleMoves[i]}: eval = ${childEval}, bias = ${bias}, adjusted = ${adjustedEval}   ${(timerEnd - timerStart)/1000} (sec)`);
       } else if (depth === initialDepth) {
-        progressBar(possibleMoves.length, i)
+        progressBar(possibleMoves.length, i);
       }
 
-      if (adjustedEval < minEval) {
-        minEval = adjustedEval;
+      if (childEval < minEval) {
+        minEval = childEval;
         bestMoves = [possibleMoves[i]];
-      } else if (adjustedEval === minEval) {
+      } else if (childEval === minEval) {
         bestMoves.push(possibleMoves[i]);
       }
       position.undo()
 
       // alpha beta pruning
-      beta = Math.min(beta, adjustedEval)
+      beta = Math.min(beta, childEval)
       if (beta <= alpha) {
         break;
       }

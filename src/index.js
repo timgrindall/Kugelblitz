@@ -46,7 +46,7 @@ while (!chess.isGameOver()) {
     resetCounters(maxDepth);
 
     const isMaximizing = chess.turn() === 'w';
-    const [bestMove, score] = minimax(chess, maxDepth, -Infinity, +Infinity, isMaximizing, maxDepth, DEBUG)
+    const [bestMove, score] = minimax(chess, maxDepth, -Infinity, +Infinity, isMaximizing, "", maxDepth, DEBUG)
     const endTime = Date.now();
     process.stdout.write('\n')
 

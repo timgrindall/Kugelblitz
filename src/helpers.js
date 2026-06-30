@@ -93,14 +93,15 @@ let numOpenLineBonus = 0;
 
 
 export function getCenterBias(move, isMaximizing) {
-  // Remove check (+), checkmate (#), and other notation symbols
-  const cleanMove = move.replace(/[+#!?]/g, '');
 
+  const cleanMove = move.replace(/[+#!?]/g, ''); // Remove non-alphanumeric characters for move analysis
+  
   // Don't apply center bias to king moves
   if (cleanMove.startsWith('K')) {
+    // console.log('King move found')
     return 0;
   }
-
+  
   let toSquare;
   
   if (cleanMove.length >= 2) {
@@ -140,24 +141,29 @@ export function getPieceValue(piece){
  * @param {bool} isMaximizing - maxi/mini state passed down from evaluatePosition()
  * @returns {number} The total board score.
  */
-export function evaluateBoard(board, depth, isMaximizing){
+export function evaluateBoard(board, depth, isMaximizing, move){
   // 1. Material Score Calculation
   let materialEval = 0;
+  let centerBias = 0;
   for (let i = 0; i < 8; i++) {
     for (let j = 0; j < 8; j++) {
-      materialEval += getPieceValue(board[i][j]);
+      materialEval = materialEval + getPieceValue(board[i][j]);
     }
   }
 
-  // 2. Open Line Bonus Calculation
+  // 2. Center Bias Calculation
+  centerBias = getCenterBias(move, isMaximizing);
+
+  // 3. Open Line Bonus Calculation
   const openLineBonus = calculateOpenLineBonus(board, isMaximizing);
+  const totalEval = materialEval + centerBias + openLineBonus;
 
   // calculate open line bonus average score
   totalOpenLineBonus += openLineBonus;
   numOpenLineBonus++;
   
   // Total evaluation is a weighted sum of all features
-  return materialEval;
+  return totalEval;
 }
 
 
@@ -167,7 +173,7 @@ export function evaluateBoard(board, depth, isMaximizing){
  * @param {number} depth - Current search depth.
  * @returns {number} The final evaluation score for this state.
  */
-export function evaluatePosition(position, depth){
+export function evaluatePosition(position, depth, move){
   nodes_evaluated++;
 
   if (position.isCheckmate()){
@@ -176,7 +182,8 @@ export function evaluatePosition(position, depth){
     return 0;
   } else {
     const isMaxi = position.turn() === 'w'
-    const evalScore = evaluateBoard(position.board(), depth, isMaxi);
+
+    const evalScore = evaluateBoard(position.board(), depth, isMaxi, move);
     if (evalScore === 0) {
       zero_evals++;
     } else {
